@@ -1,0 +1,5 @@
+{
+  "model_name": "DeepFace-Emotion (build_model failed - using DeepFace.analyze internally)",
+  "loaded_at": "2025-11-02T11:46:41.885998",
+  "notes": "This app uses DeepFace.analyze(..., actions=['emotion']) which internally uses a pretrained emotion model. No additional training performed."
+}

@@ -1,0 +1,9 @@
+flask>=3.0
+werkzeug>=3.0
+deepface>=0.0.95
+opencv-python-headless>=4.5
+Pillow>=9.0
+numpy>=1.19
+tensorflow==2.20.0
+tf-keras  # DeepFace uses TF/Keras; pick a version compatible with your environment
+sqlalchemy>=1.4

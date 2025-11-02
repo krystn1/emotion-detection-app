@@ -1,0 +1,23 @@
+<!-- templates/result.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Result</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Result for {{ name }}</h1>
+      <h2>Dominant emotion: {{ dominant_emotion }}</h2>
+      <img src="{{ image_url }}" alt="Analyzed image" width="420">
+      <h3>Probabilities</h3>
+      <ul>
+        {% for k, v in emotions.items() %}
+          <li>{{ k }}: {{ "%.2f"|format(v) }}</li>
+        {% endfor %}
+      </ul>
+      <p><a href="/">Back</a> • <a href="/history">History</a></p>
+    </div>
+  </body>
+</html>

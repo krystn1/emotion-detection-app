@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture - Emotion Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📹 Live Camera Emotion Detection</h1>
+            <a href="{{ url_for('index') }}" class="back-btn">← Back to Home</a>
+        </header>
+
+        <main>
+            <div class="camera-section">
+                <div class="form-group">
+                    <label for="userName">Your Name:</label>
+                    <input type="text" id="userName" placeholder="Enter your name" required>
+                </div>
+
+                <div class="camera-container">
+                    <video id="video" autoplay></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                </div>
+
+                <div class="camera-controls">
+                    <button id="startCamera" class="btn btn-secondary">Start Camera</button>
+                    <button id="capture" class="btn btn-primary" disabled>Capture & Analyze</button>
+                    <button id="stopCamera" class="btn btn-danger" disabled>Stop Camera</button>
+                </div>
+
+                <div id="result" class="result-area" style="display: none;">
+                    <h3>Analysis Result:</h3>
+                    <div id="resultContent"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('capture');
+        const stopBtn = document.getElementById('stopCamera');
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('resultContent');
+
+        let stream = null;
+
+        startBtn.addEventListener('click', startCamera);
+        captureBtn.addEventListener('click', captureImage);
+        stopBtn.addEventListener('click', stopCamera);
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                startBtn.disabled = true;
+                captureBtn.disabled = false;
+                stopBtn.disabled = false;
+            } catch (err) {
+                alert('Error accessing camera: ' + err.message);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                startBtn.disabled = false;
+                captureBtn.disabled = true;
+                stopBtn.disabled = true;
+            }
+        }
+
+        async function captureImage() {
+            const userName = document.getElementById('userName').value;
+            if (!userName) {
+                alert('Please enter your name');
+                return;
+            }
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            try {
+                const response = await fetch('/capture', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: userName,
+                        image: imageData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    resultContent.innerHTML = `
+                        <p><strong>Name:</strong> ${userName}</p>
+                        <p><strong>Detected Emotion:</strong> ${result.emotion}</p>
+                        <p><strong>Confidence:</strong> ${(result.confidence * 100).toFixed(2)}%</p>
+                    `;
+                    resultDiv.style.display = 'block';
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Error processing image: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

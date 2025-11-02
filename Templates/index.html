@@ -1,0 +1,72 @@
+<!-- templates/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Emotion Detection Web App</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Emotion Detection (DeepFace)</h1>
+
+      <section class="card">
+        <h2>Upload a photo</h2>
+        <form action="/analyze" method="post" enctype="multipart/form-data">
+          <label>Your name (optional)</label><br/>
+          <input type="text" name="name" placeholder="Your name"><br/><br/>
+          <input type="file" name="image" accept="image/*" required><br/><br/>
+          <button type="submit">Analyze</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Or use your webcam (live)</h2>
+        <label>Your name (optional)</label><br/>
+        <input id="cam_name" type="text" placeholder="Your name"><br/><br/>
+        <video id="video" width="400" height="300" autoplay></video><br/>
+        <button id="snap">Capture & Analyze</button>
+        <div id="webcam_result"></div>
+      </section>
+
+      <p><a href="/history">View history</a></p>
+      <p>App powered by DeepFace (pretrained emotion model).</p>
+    </div>
+
+    <script>
+      // Webcam capture and send base64 to /analyze_webcam
+      const video = document.getElementById('video');
+      const snapBtn = document.getElementById('snap');
+
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => { console.warn('Could not access camera:', err); });
+
+      snapBtn.onclick = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 400;
+        canvas.height = video.videoHeight || 300;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+
+        const name = document.getElementById('cam_name').value || "Anonymous";
+        const res = await fetch('/analyze_webcam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: dataUrl, name })
+        });
+
+        const json = await res.json();
+        if (json.error) {
+          document.getElementById('webcam_result').innerText = "Error: " + json.error;
+          return;
+        }
+        // Show annotated image and result
+        document.getElementById('webcam_result').innerHTML =
+          `<p>Detected: <strong>${json.dominant_emotion}</strong></p>
+           <img src="${json.image_url}" width="320">`;
+      };
+    </script>
+  </body>
+</html>

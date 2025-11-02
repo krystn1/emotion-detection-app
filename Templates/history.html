@@ -1,0 +1,31 @@
+<!-- templates/history.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>History</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Past Analyses</h1>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Image</th><th>Emotion</th><th>When (UTC)</th></tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r[0] }}</td>
+            <td>{{ r[1] }}</td>
+            <td><img src="{{ '/' + r[2] }}" width="120"></td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p><a href="/">Back</a></p>
+    </div>
+  </body>
+</html>
